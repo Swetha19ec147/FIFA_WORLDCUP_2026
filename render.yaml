@@ -3,6 +3,7 @@ services:
   - type: web
     name: fifa-api
     env: node
+    plan: free
     rootDir: apps/api
     buildCommand: npm install && npx prisma generate && npx prisma db push && npm run build
     startCommand: npm run start:prod
@@ -20,6 +21,7 @@ services:
   - type: web
     name: fifa-web
     env: node
+    plan: free
     rootDir: apps/web
     buildCommand: npm install && npm run build
     startCommand: npm run start
