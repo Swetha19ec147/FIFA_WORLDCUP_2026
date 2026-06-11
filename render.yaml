@@ -4,9 +4,9 @@ services:
     name: fifa-api
     env: node
     plan: free
-    rootDir: apps/api
-    buildCommand: npm install && npx prisma generate && npx prisma db push && npm run build
-    startCommand: npm run start:prod
+    # rootDir left blank to run from the root of the monorepo
+    buildCommand: npm install && npx prisma generate && npx prisma db push && npm run build -w api
+    startCommand: npm run start:prod -w api
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -16,15 +16,17 @@ services:
         value: 3001
       - key: NEXT_PUBLIC_API_URL
         value: "" # API doesn't need this, but good practice if shared
+      - key: GEMINI_API_KEY
+        sync: false
 
   # 2. Next.js Frontend
   - type: web
     name: fifa-web
     env: node
     plan: free
-    rootDir: apps/web
-    buildCommand: npm install && npm run build
-    startCommand: npm run start
+    # rootDir left blank to run from the root of the monorepo
+    buildCommand: npm install && npm run build -w @visionary-fifa/web
+    startCommand: npm run start -w @visionary-fifa/web
     envVars:
       - key: NEXT_PUBLIC_API_URL
         fromService:
