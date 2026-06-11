@@ -1,0 +1,183 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum GroupId {
+  A
+  B
+  C
+  D
+  E
+  F
+  G
+  H
+  I
+  J
+  K
+  L
+}
+
+enum MatchStatus {
+  UPCOMING
+  LIVE
+  HT
+  FT
+}
+
+enum QualStatus {
+  qualified
+  playoff
+}
+
+enum PosGroup {
+  GK
+  DEF
+  MID
+  FWD
+}
+
+model Team {
+  id        String   @id @default(cuid())
+  code      String   @unique           // "ARG"
+  name      String
+  flag      String                      // emoji fallback
+  iso2      String                      // "ar" / "gb-eng"
+  group     GroupId
+  
+  // relations
+  homeMatches Match[] @relation("home")
+  awayMatches Match[] @relation("away")
+  players     Player[]
+  standing    Standing?
+}
+
+model Standing {                         // === GroupRow
+  id      String   @id @default(cuid())
+  team    Team     @relation(fields: [teamId], references: [id])
+  teamId  String   @unique
+  group   GroupId
+  played  Int  @default(0)
+  won     Int  @default(0)
+  drawn   Int  @default(0)
+  lost    Int  @default(0)
+  gf      Int  @default(0)
+  ga      Int  @default(0)
+  points  Int  @default(0)
+  status  QualStatus?
+  updatedAt DateTime @updatedAt
+  
+  @@index([group])
+}
+
+model Match {
+  id         String      @id @default(cuid())
+  externalId String?     @unique         // id from API-Football, for upserts
+  slug       String      @unique         // "argentina-vs-austria"
+  home       Team        @relation("home", fields: [homeId], references: [id])
+  homeId     String
+  away       Team        @relation("away", fields: [awayId], references: [id])
+  awayId     String
+  homeScore  Int?
+  awayScore  Int?
+  status     MatchStatus @default(UPCOMING)
+  minute     Int?
+  kickoff    DateTime
+  stadium    String
+  city       String
+  group      GroupId?
+  stage      String
+  events     MatchEvent[]
+  stats      Json?                        // possession/xG/shots block
+  prediction Prediction?
+  updatedAt  DateTime    @updatedAt
+  
+  @@index([status])
+  @@index([kickoff])
+}
+
+model MatchEvent {                        // === TimelineEvent
+  id      String @id @default(cuid())
+  match   Match  @relation(fields: [matchId], references: [id])
+  matchId String
+  minute  Int
+  type    String                          // goal | card | sub | var
+  team    String                          // "home" | "away"
+  text    String
+  
+  @@index([matchId])
+}
+
+model Player {                            // === PlayerPro (superset of Player/StarPlayer)
+  id            String  @id @default(cuid())
+  externalId    String? @unique
+  slug          String  @unique
+  name          String
+  fullName      String?
+  country       String
+  iso2          String
+  team          Team?   @relation(fields: [teamId], references: [id])
+  teamId        String?
+  pos           String
+  posGroup      PosGroup
+  club          String
+  number        Int
+  age           Int
+  height        String
+  foot          String
+  goals         Int @default(0)
+  assists       Int @default(0)
+  rating        Float @default(0)
+  cleanSheets   Int @default(0)
+  matchesPlayed Int @default(0)
+  careerGoals   Int @default(0)
+  careerCaps    Int @default(0)
+  image         String?
+  cutout        String?
+  honors        String  @default("")
+  bio           String  @default("")
+  marketValue   String  @default("")
+  fifaRating    Int     @default(0)
+  star          Boolean @default(false)
+  trending      Boolean @default(false)
+  
+  @@index([posGroup])
+  @@index([trending])
+}
+
+model NewsItem {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String
+  excerpt   String
+  body      String?                       // full article (or pulled from CMS)
+  category  String
+  date      DateTime
+  readTime  String
+  source    String   @default("cms")
+  
+  @@index([date])
+}
+
+model Prediction {                        // === lib/predictions.ts Prediction
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  match       Match    @relation(fields: [matchId], references: [id])
+  matchId     String   @unique
+  publishAt   DateTime
+  predictedScore String
+  winner      String                       // home | away | draw
+  confidence  Int
+  homePct     Int
+  drawPct     Int
+  awayPct     Int
+  // rich narrative + structured blocks stored as JSON to match the TS type exactly
+  payload     Json                         // overview, fullAnalysis[], verdict, forms,
+                                           // h2h, keyPlayers, tactics, battles, XIs,
+                                           // injuries, stats, keyFactors, implications
+  model       String                       // "dixon-coles+claude-opus-4-8"
+  createdAt   DateTime @default(now())
+}
