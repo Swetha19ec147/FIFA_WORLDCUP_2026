@@ -1,22 +1,15 @@
+import { allMatches, standings as staticStandings } from './data';
+
 export async function fetchMatches() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/matches`, {
-    cache: 'no-store'
-  });
-  if (!res.ok) return [];
-  return res.json();
+  return allMatches;
 }
 
 export async function fetchLiveMatches() {
-  const matches = await fetchMatches();
-  return matches.filter((m: any) => m.status === 'LIVE' || m.status === 'HT');
+  return [];
 }
 
 export async function fetchStandings() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/standings`, {
-    cache: 'no-store'
-  });
-  if (!res.ok) return [];
-  return res.json();
+  return staticStandings;
 }
 
 export async function fetchNews() {

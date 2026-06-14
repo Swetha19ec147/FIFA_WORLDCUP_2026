@@ -138,8 +138,8 @@ export default function Hero() {
           </div>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link href="/live-scores" className="btn-primary">
-              <PlayCircle className="h-5 w-5" /> Explore Live Matches
+            <Link href="/schedule" className="btn-primary">
+              <PlayCircle className="h-5 w-5" /> Explore Matches
             </Link>
             <Link href="/predictions" className="btn-ghost">
               <Sparkles className="h-5 w-5 text-neon-purple" /> AI Predictions

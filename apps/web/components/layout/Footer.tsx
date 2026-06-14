@@ -5,7 +5,6 @@ const cols = [
   {
     title: "Tournament",
     links: [
-      { href: "/live-scores", label: "Live Scores" },
       { href: "/standings", label: "Standings" },
       { href: "/schedule", label: "Schedule" },
       { href: "/predictions", label: "AI Predictions" },

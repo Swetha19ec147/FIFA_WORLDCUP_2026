@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Hero from "@/components/home/Hero";
-import LiveMatches from "@/components/home/LiveMatches";
 import AIPredictions from "@/components/home/AIPredictions";
 import UpcomingFixtures from "@/components/home/UpcomingFixtures";
 import GroupStandings from "@/components/home/GroupStandings";
@@ -56,7 +55,6 @@ export default async function HomePage() {
       })} />
       <JsonLd data={homeFaq} />
       <Hero />
-      <LiveMatches />
       <AIPredictions initialPredictions={predictionsData} />
       <UpcomingFixtures />
       <GroupStandings initialStandings={standingsData} />

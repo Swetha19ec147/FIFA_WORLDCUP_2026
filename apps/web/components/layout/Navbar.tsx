@@ -10,7 +10,6 @@ import TrophyCup from "@/components/ui/TrophyCup";
 
 const links = [
   { href: "/", label: "Home" },
-  { href: "/live-scores", label: "Live" },
   { href: "/standings", label: "Standings" },
   { href: "/schedule", label: "Schedule" },
   { href: "/teams", label: "Teams" },
@@ -88,12 +87,8 @@ export default function Navbar() {
         </ul>
 
         <div className="hidden md:block">
-          <Link href="/live-scores" className="btn-primary !px-5 !py-2.5">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
-            </span>
-            Live
+          <Link href="/schedule" className="btn-primary !px-5 !py-2.5">
+            Schedule
           </Link>
         </div>
 
