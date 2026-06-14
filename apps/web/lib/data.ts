@@ -170,35 +170,30 @@ export const groupIds: GroupId[] = ["A","B","C","D","E","F","G","H","I","J","K",
 /** Deterministic pseudo-standings so the table looks alive but stays stable. */
 function buildGroup(group: GroupId): GroupRow[] {
   const members = teams.filter((t) => t.group === group);
-  const seed = group.charCodeAt(0);
-  const rows = members.map((team, i) => {
-    const won = (seed + i * 3) % 3;
-    const drawn = (seed + i) % 2;
-    const lost = Math.max(0, 2 - won - drawn);
-    const played = won + drawn + lost;
-    const gf = won * 2 + drawn + ((seed + i) % 3);
-    const ga = lost * 2 + ((seed * i) % 3);
+  const groupMatches = allMatches.filter(m => m.group === group && m.status === "FT");
+  
+  const rows = members.map((team) => {
+    let played = 0, won = 0, drawn = 0, lost = 0, gf = 0, ga = 0;
+    for (const m of groupMatches) {
+      if (m.home.code === team.code || m.away.code === team.code) {
+        played++;
+        const isHome = m.home.code === team.code;
+        const myScore = isHome ? (m.homeScore || 0) : (m.awayScore || 0);
+        const theirScore = isHome ? (m.awayScore || 0) : (m.homeScore || 0);
+        gf += myScore;
+        ga += theirScore;
+        if (myScore > theirScore) won++;
+        else if (myScore === theirScore) drawn++;
+        else lost++;
+      }
+    }
     return {
-      team,
-      played,
-      won,
-      drawn,
-      lost,
-      gf,
-      ga,
-      points: won * 3 + drawn,
-      status: null as GroupRow["status"],
+      team, played, won, drawn, lost, gf, ga, points: won * 3 + drawn, status: null as GroupRow["status"]
     };
   });
-  rows.sort(
-    (a, b) =>
-      b.points - a.points ||
-      b.gf - b.ga - (a.gf - a.ga) ||
-      b.gf - a.gf,
-  );
-  rows.forEach((r, idx) => {
-    r.status = idx < 2 ? "qualified" : idx === 2 ? "playoff" : null;
-  });
+  
+  rows.sort((a, b) => b.points - a.points || b.gf - b.ga - (a.gf - a.ga) || b.gf - a.gf);
+  rows.forEach((r, idx) => { r.status = idx < 2 ? "qualified" : idx === 2 ? "playoff" : null; });
   return rows;
 }
 
@@ -246,29 +241,28 @@ const M = (
   };
 };
 
-export const liveMatches: Match[] = [
-  M("m1", "MEX", "RSA", 2, 1, "LIVE", "2026-06-11T20:00:00Z", "Estadio Azteca", "Mexico City", "Group A", 67, "A"),
-  M("m2", "ARG", "AUT", 1, 0, "LIVE", "2026-06-11T20:00:00Z", "MetLife Stadium", "New York / New Jersey", "Group J", 54, "J"),
-  M("m3", "FRA", "SEN", 1, 1, "HT", "2026-06-11T22:30:00Z", "SoFi Stadium", "Los Angeles", "Group I", 45, "I"),
-];
+export const liveMatches: Match[] = [];
 
 export const upcomingMatches: Match[] = [
-  M("u1", "USA", "PAR", null, null, "UPCOMING", "2026-06-12T19:00:00Z", "AT&T Stadium", "Dallas", "Group D", undefined, "D"),
-  M("u2", "ENG", "CRO", null, null, "UPCOMING", "2026-06-12T21:30:00Z", "Mercedes-Benz Stadium", "Atlanta", "Group L", undefined, "L"),
-  M("u3", "BRA", "MAR", null, null, "UPCOMING", "2026-06-13T18:00:00Z", "Hard Rock Stadium", "Miami", "Group C", undefined, "C"),
-  M("u4", "POR", "COL", null, null, "UPCOMING", "2026-06-13T20:30:00Z", "BMO Field", "Toronto", "Group K", undefined, "K"),
-  M("u5", "ESP", "URU", null, null, "UPCOMING", "2026-06-14T19:00:00Z", "Lincoln Financial Field", "Philadelphia", "Group H", undefined, "H"),
-  M("u6", "GER", "ECU", null, null, "UPCOMING", "2026-06-14T21:30:00Z", "Levi's Stadium", "San Francisco Bay Area", "Group E", undefined, "E"),
   M("u7", "ARG", "ALG", null, null, "UPCOMING", "2026-06-15T19:00:00Z", "MetLife Stadium", "New York / New Jersey", "Group J", undefined, "J"),
 ];
 
 export const recentResults: Match[] = [
+  M("m1", "MEX", "RSA", 2, 1, "FT", "2026-06-11T20:00:00Z", "Estadio Azteca", "Mexico City", "Group A", undefined, "A"),
+  M("m2", "ARG", "AUT", 2, 0, "FT", "2026-06-11T20:00:00Z", "MetLife Stadium", "New York / New Jersey", "Group J", undefined, "J"),
+  M("m3", "FRA", "SEN", 3, 1, "FT", "2026-06-11T22:30:00Z", "SoFi Stadium", "Los Angeles", "Group I", undefined, "I"),
+  M("u1", "USA", "PAR", 1, 1, "FT", "2026-06-12T19:00:00Z", "AT&T Stadium", "Dallas", "Group D", undefined, "D"),
+  M("u2", "ENG", "CRO", 1, 0, "FT", "2026-06-12T21:30:00Z", "Mercedes-Benz Stadium", "Atlanta", "Group L", undefined, "L"),
+  M("u3", "BRA", "MAR", 2, 1, "FT", "2026-06-13T18:00:00Z", "Hard Rock Stadium", "Miami", "Group C", undefined, "C"),
+  M("u4", "POR", "COL", 2, 2, "FT", "2026-06-13T20:30:00Z", "BMO Field", "Toronto", "Group K", undefined, "K"),
+  M("u5", "ESP", "URU", 1, 2, "FT", "2026-06-14T19:00:00Z", "Lincoln Financial Field", "Philadelphia", "Group H", undefined, "H"),
+  M("u6", "GER", "ECU", 3, 0, "FT", "2026-06-14T21:30:00Z", "Levi's Stadium", "San Francisco Bay Area", "Group E", undefined, "E"),
   M("r1", "BEL", "EGY", 3, 0, "FT", "2026-06-10T20:00:00Z", "BC Place", "Vancouver", "Group G", undefined, "G"),
   M("r2", "NED", "JPN", 2, 1, "FT", "2026-06-10T22:30:00Z", "Lumen Field", "Seattle", "Group F", undefined, "F"),
 ];
 
 /** Featured live match used by the Live Match page. */
-export const featuredMatch = liveMatches[0];
+export const featuredMatch = recentResults[0];
 
 export const allMatches: Match[] = [
   ...liveMatches,
