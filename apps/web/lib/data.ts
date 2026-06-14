@@ -167,39 +167,7 @@ const byCode = (code: string) => teams.find((t) => t.code === code)!;
 
 export const groupIds: GroupId[] = ["A","B","C","D","E","F","G","H","I","J","K","L"];
 
-/** Deterministic pseudo-standings so the table looks alive but stays stable. */
-function buildGroup(group: GroupId): GroupRow[] {
-  const members = teams.filter((t) => t.group === group);
-  const groupMatches = allMatches.filter(m => m.group === group && m.status === "FT");
-  
-  const rows = members.map((team) => {
-    let played = 0, won = 0, drawn = 0, lost = 0, gf = 0, ga = 0;
-    for (const m of groupMatches) {
-      if (m.home.code === team.code || m.away.code === team.code) {
-        played++;
-        const isHome = m.home.code === team.code;
-        const myScore = isHome ? (m.homeScore || 0) : (m.awayScore || 0);
-        const theirScore = isHome ? (m.awayScore || 0) : (m.homeScore || 0);
-        gf += myScore;
-        ga += theirScore;
-        if (myScore > theirScore) won++;
-        else if (myScore === theirScore) drawn++;
-        else lost++;
-      }
-    }
-    return {
-      team, played, won, drawn, lost, gf, ga, points: won * 3 + drawn, status: null as GroupRow["status"]
-    };
-  });
-  
-  rows.sort((a, b) => b.points - a.points || b.gf - b.ga - (a.gf - a.ga) || b.gf - a.gf);
-  rows.forEach((r, idx) => { r.status = idx < 2 ? "qualified" : idx === 2 ? "playoff" : null; });
-  return rows;
-}
-
-export const standings: Record<GroupId, GroupRow[]> = Object.fromEntries(
-  groupIds.map((g) => [g, buildGroup(g)]),
-) as Record<GroupId, GroupRow[]>;
+// buildGroup and standings moved down
 
 // ---------------------------------------------------------------------------
 // Matches — real intra-group fixtures (illustrative scores)
@@ -273,6 +241,40 @@ export const allMatches: Match[] = [
 export function findMatch(slug: string): Match | undefined {
   return allMatches.find((m) => m.slug === slug);
 }
+
+/** Standings calculated dynamically based on real match results. */
+function buildGroup(group: GroupId): GroupRow[] {
+  const members = teams.filter((t) => t.group === group);
+  const groupMatches = allMatches.filter(m => m.group === group && m.status === "FT");
+  
+  const rows = members.map((team) => {
+    let played = 0, won = 0, drawn = 0, lost = 0, gf = 0, ga = 0;
+    for (const m of groupMatches) {
+      if (m.home.code === team.code || m.away.code === team.code) {
+        played++;
+        const isHome = m.home.code === team.code;
+        const myScore = isHome ? (m.homeScore || 0) : (m.awayScore || 0);
+        const theirScore = isHome ? (m.awayScore || 0) : (m.homeScore || 0);
+        gf += myScore;
+        ga += theirScore;
+        if (myScore > theirScore) won++;
+        else if (myScore === theirScore) drawn++;
+        else lost++;
+      }
+    }
+    return {
+      team, played, won, drawn, lost, gf, ga, points: won * 3 + drawn, status: null as GroupRow["status"]
+    };
+  });
+  
+  rows.sort((a, b) => b.points - a.points || b.gf - b.ga - (a.gf - a.ga) || b.gf - a.gf);
+  rows.forEach((r, idx) => { r.status = idx < 2 ? "qualified" : idx === 2 ? "playoff" : null; });
+  return rows;
+}
+
+export const standings: Record<GroupId, GroupRow[]> = Object.fromEntries(
+  groupIds.map((g) => [g, buildGroup(g)]),
+) as Record<GroupId, GroupRow[]>;
 
 // ---------------------------------------------------------------------------
 // Star players & legends (real squads + World Cup / FIFA history)
