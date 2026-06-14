@@ -259,6 +259,7 @@ export const upcomingMatches: Match[] = [
   M("u4", "POR", "COL", null, null, "UPCOMING", "2026-06-13T20:30:00Z", "BMO Field", "Toronto", "Group K", undefined, "K"),
   M("u5", "ESP", "URU", null, null, "UPCOMING", "2026-06-14T19:00:00Z", "Lincoln Financial Field", "Philadelphia", "Group H", undefined, "H"),
   M("u6", "GER", "ECU", null, null, "UPCOMING", "2026-06-14T21:30:00Z", "Levi's Stadium", "San Francisco Bay Area", "Group E", undefined, "E"),
+  M("u7", "ARG", "ALG", null, null, "UPCOMING", "2026-06-15T19:00:00Z", "MetLife Stadium", "New York / New Jersey", "Group J", undefined, "J"),
 ];
 
 export const recentResults: Match[] = [

@@ -1,5 +1,5 @@
-import { allMatches, standings as staticStandings } from './data';
-
+import { allMatches, standings as staticStandings, news as staticNews } from './data';
+import { predictions as staticPredictions } from './predictions';
 export async function fetchMatches() {
   return allMatches;
 }
@@ -13,11 +13,15 @@ export async function fetchStandings() {
 }
 
 export async function fetchNews() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/news`, {
-    next: { revalidate: 60 }
-  });
-  if (!res.ok) return [];
-  return res.json();
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/news`, {
+      next: { revalidate: 60 }
+    });
+    if (!res.ok) return staticNews;
+    return res.json();
+  } catch (error) {
+    return staticNews;
+  }
 }
 
 function mapPrediction(apiPred: any) {
@@ -85,19 +89,27 @@ function mapPrediction(apiPred: any) {
 }
 
 export async function fetchPredictions() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/predictions`, {
-    cache: 'no-store'
-  });
-  if (!res.ok) return [];
-  const data = await res.json();
-  return data.map(mapPrediction);
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/predictions`, {
+      cache: 'no-store'
+    });
+    if (!res.ok) return staticPredictions;
+    const data = await res.json();
+    return data.map(mapPrediction);
+  } catch (error) {
+    return staticPredictions;
+  }
 }
 
 export async function fetchPrediction(slug: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/predictions/${slug}`, {
-    cache: 'no-store'
-  });
-  if (!res.ok) return null;
-  const data = await res.json();
-  return mapPrediction(data);
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/predictions/${slug}`, {
+      cache: 'no-store'
+    });
+    if (!res.ok) return staticPredictions.find(p => p.slug === slug) || null;
+    const data = await res.json();
+    return mapPrediction(data);
+  } catch (error) {
+    return staticPredictions.find(p => p.slug === slug) || null;
+  }
 }
